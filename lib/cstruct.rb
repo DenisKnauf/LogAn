@@ -1,5 +1,6 @@
 class CStruct
-	def new post, *p
+	def self.new *p
+		pre = p.pop  if p.last.kind_of? Hash
 		Class.new do
 			include CStruct::Mix
 			eval <<-EOF
@@ -7,8 +8,8 @@ class CStruct
 				def self._directives
 					["#{p.map{|n,v|"#{v}"}.join}", #{post}]
 				end
-				def initialize data
-					#{p.map{|n,v|"@#{n}"}.join', '} = super data
+				def initialize data = nil
+					#{p.map{|n,v|"@#{n}"}.join', '} = _parse data
 				end
 				def _create
 					super #{p.map{|n,v|"@#{n}"}.join', '}
@@ -19,7 +20,8 @@ class CStruct
 end
 
 module CStruct::Mix
-	def initialize data
+	def _parse data = nil
+		return  unless data
 		pre, pos = self.class._directives
 		if pos.nil? or pos == 0  then data.unpack pre
 		elsif pos == 1  then data.unpack pre+'a*'
@@ -41,7 +43,7 @@ module CStruct::Mix
 		else
 			r = data[ 0...-pos ].pack pre
 			r += data[ -pos..-1 ].inject( [r.length]) {|i,j| j.push i+j.last}[1...-1].pack 'N*'
-			r + data[ -pos..-1 ].pack 'a*'*(pos-1)
+			r + data[ -pos..-1 ].pack( 'a*'*(pos-1))
 		end
 	end
 end

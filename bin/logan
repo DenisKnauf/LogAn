@@ -1,0 +1,60 @@
+#!/usr/bin/ruby
+
+require 'sbdb'
+
+class Emit
+	def initialize env
+		@env = env
+	end
+
+	def emit f, k, v
+		env[ "#{f}/"][ k] = v
+	end
+end
+
+class Worker
+	class Box
+		def initialize e
+			@emit = e
+		end
+
+		def emit f, k, v
+			@emit.emit f, k, v
+		end
+	end
+
+	def emit f, k, v
+		@out.push [f, k, v]
+	end
+
+	def initalize i, o
+		@in, @out = i, o
+		Thread.new do
+			$SAFE = 3
+			@in.each do |o|
+				o.data
+			end
+		end
+	end
+end
+
+SBDB::Env.new 'conf' do |conf|
+	SBDB::Env.new 'logs' do |logs|
+		SBDB::Env.new 'cache' do |cache|
+			begin
+				wn = conf['worker','conf',flags: SBDB::READONLY]['worker']
+				inq, outq = SizedQueue.new( 1), SizedQueue.new( 1)
+				@worker = wn.times.map{ Worker.new inq, outq }
+				Thread.new( oq) do |oq|
+					cache[ "#{oq[0]}/#{}"][ oq[]]
+				end
+				emit = Emit.new cache
+				box = Box.new emit
+				while line = logs['newids'].get nil, "\0\0\0\0", nil, SBDB::CONSUME_WAIT
+					box.map line
+				end
+			ensure
+			end
+		end
+	end
+end

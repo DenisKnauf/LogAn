@@ -3,18 +3,26 @@ Status
 
 Proof of Concept!
 
-Derzeit lote ich nur aus,  was alles benoetigt wird.
+Queue:
+	Ruby-Klasse zur Kommunikation zwischen Threads.  Unidirektional
+BDB-Queue:
+	Queue auf Basis einer BDB.  Kann zur Kommunikation zwischen Prozessen dienen.  Unidirektional.
+Stream:
+	UNIX-Stream. Bidirektional.
 
 Sicherheit
 ==========
 
 Verarbeitung wird jeweils abgeschottet und  darf nicht auf andere Daten zugreifen.
-$SAFE = 4
+$SAFE = 4 waere wuenschenswert,  aber unpraktikabel bezueglich Queue.
+$SAFE = 3 reicht.
 
-Map auf Logdaten
-================
+Mehrere Prozesse also nicht noetig.
 
-Liest aus der Queue,  verarbeitet und schreibt in eine andere Datenbank.
+erstes Map auf Logdaten
+=======================
+
+Liest aus der BDB-Queue,  verarbeitet und schreibt in eine andere Datenbank.
 
 Parallelisierung
 ----------------
@@ -22,12 +30,12 @@ Parallelisierung
 Eine DB,  die speichert,  wer an was arbeitet.  Koennte langsam werden.
 
 MapReduce allgemein
-====================
+===================
 
-Woher kommt die Information,  dass gearbeitet werden kann?  Queue/Stream/im Prozess.
+Woher kommt die Information,  dass gearbeitet werden kann?  BDB-Queue/Stream/Queue.
 
 Piping
 ======
 
-MapReduce hintereinander gepipet.  Queue/Stream simpel,
-wenn jeweils ein Prozess/Thread zustaendig ist.  Ein Prozess komplexer.
+MapReduce-Verarbeitung kann auch hintereinander geschaltet werden.
+Hierzu bietet sich Queue im Prozess an.

@@ -1,0 +1,52 @@
+#!/usr/bin/ruby
+
+require 'sbdb'
+
+# Secure Worker.  Unsafe code in a sandbox.
+class Worker
+	class Box
+		def self.start e, c
+			Thread.new c, &new( e).method( :run)
+		end
+
+		def run
+			this.untaint
+			e.taint
+			$SAFE = 4
+		end
+
+		def initialize e
+			@emit = e
+		end
+
+		def emit f, k, v
+			@emit.emit f, k, v
+		end
+	end
+
+	def emit f, k, v
+		@out.push [f, k, v]
+	end
+
+	def initalize i, o
+		@in, @out, @funcs = i, o, {}
+		super method(:run)
+	end
+
+	def run
+		$SAFE = 3
+		@in.each do |o|
+			@funcs[:]
+		end
+	end
+end
+
+SBDB::Env.new 'conf' do |conf|
+	SBDB::Env.new 'logs' do |logs|
+		SBDB::Env.new 'cache' do |cache|
+			while line = logs[ 'newids'].get( nil, "\0\0\0\0", nil, SBDB::CONSUME_WAIT)
+				
+			end
+		end
+	end
+end

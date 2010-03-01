@@ -6,35 +6,34 @@ class Queue
 	attr_reader :que, :waiting
 end
 
-Thread.abort_on_exception = true
-q, o = Queue.new, Queue.new
-puts q.inspect
+class Box
+	attr_reader :_
+	attr_accessor :emited
 
-t = Thread.new( q, o) do |q, o|
-	begin
-		o << 3
-o.que.taint
-q.que.taint
-o.waiting.taint
-q.waiting.taint
-		$SAFE = 3
-		loop do
-			i = q.pop
-			begin
-				o.push eval(i)
-			rescue Object
-				o.push [$!.class, $!, $!.backtrace].inspect
-			end
-		end
-	rescue Object
-		o.push [$!.class, $!, $!.backtrace].inspect
+	def initialize _
+		@_, @emited = _, []
+	end
+
+	def emit k, v
+		@emited.push [k, v]
 	end
 end
 
-Thread.new( o) {|o| loop{$stdout.puts "=> #{o.pop.inspect}"} }
+Thread.abort_on_exception = true
+q, o, r = Queue.new, Queue.new, nil
+puts q.inspect
+$stdout.print "(0)$ "
 
-STDIN.each_with_index do |l,i|
-	l.untaint
-	q.push l
-	$stdout.print "(#{i})> "
+STDIN.each_with_index do |l, i|
+	r = begin
+			Thread.new do
+				l.untaint
+				$SAFE = 4
+				b = Box.new r
+				[b.instance_eval( l, 'BOX', 0), b.emited]
+			end.value
+		rescue Object
+			[$!.class, $!, $!.backtrace].inspect
+		end
+	$stdout.print "#{r.inspect}\n(#{i+1})$ "
 end

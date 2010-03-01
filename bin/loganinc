@@ -44,6 +44,7 @@ end
 SBDB::Env.new 'conf' do |conf|
 	SBDB::Env.new 'logs' do |logs|
 		SBDB::Env.new 'cache' do |cache|
+			test = cache[ 'test']
 			while line = logs[ 'newids'].get( nil, "\0\0\0\0", nil, SBDB::CONSUME_WAIT)
 				
 			end

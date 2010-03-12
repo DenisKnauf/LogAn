@@ -1,0 +1,26 @@
+
+* BDB/SBDB
+	+ Enthaelt noch einen fiesen Fehler.
+	  Kann aber auch an falscher Benutzung liegen.
+
+* LogAn
+	+ Ablauf (siehe Bild) (0%)
+	+	Sandbox (80%)
+	+ Einlesen (0%)
+	+ Persistenter Speicher (80%)
+	+ Configlogik (0%)
+		- BDB
+		- "Klassenbauen"
+			- Sandbox
+
+* File2LogAn
+	+ Server (50%)
+		- select (100%)
+	+ Speichern (0%)
+		- BDB
+	+ Sandbox
+	+ Ablauf (50%)
+
+* push2mysql
+	+ Einlesen
+	+ insert (50%)

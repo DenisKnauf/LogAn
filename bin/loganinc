@@ -43,10 +43,15 @@ end
 
 SBDB::Env.new 'conf' do |conf|
 	SBDB::Env.new 'logs' do |logs|
-		SBDB::Env.new 'cache' do |cache|
+		SBDB::Env.new 'persist' do |persist|
 			test = cache[ 'test']
 			while line = logs[ 'newids'].get( nil, "\0\0\0\0", nil, SBDB::CONSUME_WAIT)
-				
+				type, obj = line.unpack 'Na*'
+				case type
+				when 11
+					sid, log = obj.unpack 'Na*'
+					parser = conf[ 'sids.cnf', 'parser'][sid]
+				end
 			end
 		end
 	end

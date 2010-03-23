@@ -12,6 +12,7 @@ begin
     gem.authors = ["Denis Knauf"]
     gem.files = %w[AUTHORS README.md VERSION lib/**/*.rb test/**/*.rb]
     gem.require_paths = %w[lib]
+		gem.add_dependency 'sbdb'
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError

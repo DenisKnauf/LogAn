@@ -2,65 +2,92 @@
 
 require 'sbdb'
 require 'uuidtools'
+require 'logan'
 
-class Rotate
-	def initialize db, env = db.home, &e
-		@rdb, @env, @dbs = db, env, {}
-		self.hash = e || lambda {|k|
-			[k.timestamp.to_i/60/60/24].pack 'N'
-		}
-	end
+module LogAn
+	class Loglines
+		attr_reader :env, :rdb, :dbs
 
-	def hash= e
-		self.hash &e
-	end
-
-	def hash &e
-		@hash_func = e  if e
-		@hash_func
-	end
-
-	def hashing k
-		@hash_func.call k
-	end
-
-	def db_name id
-		h = hashing id
-		n = @rdb[ h]
-		if n
-			n = UUIDTools::UUID.parse_raw n
-		else
-			n = UUIDTools::UUID.timestamp_create
-			@rdb[ h] = n.raw
-			info :create => n.to_s
+		def self.new *paras
+			ret = obj = super( *paras)
+			begin ret = yield obj
+			ensure
+				SBDB.raise_barrier &obj.method( :close)
+			end  if block_given?
+			ret
 		end
-		n
-	end
 
-	def db n
-		@env[ n.to_s, :type => SBDB::Btree, :flags => SBDB::CREATE | SBDB::AUTO_COMMIT]
-	end
+		def initialize env = nil
+			env ||= 'logs'
+			@env = if String === env
+					Dir.mkdir env  rescue Errno::EEXIST
+					SBDB::Env.new env,
+						log_config: SBDB::Env::LOG_IN_MEMORY | SBDB::Env::LOG_AUTO_REMOVE,
+						flags: SBDB::CREATE | SBDB::Env::INIT_TXN | Bdb::DB_INIT_MPOOL
+				else env
+				end
+			@rdb = @env[ 'rotates.db', :type => SBDB::Btree, :flags => SBDB::CREATE | SBDB::AUTO_COMMIT]
+			@queue = @env[ "newids.queue", :type => SBDB::Queue, :flags => SBDB::CREATE | SBDB::AUTO_COMMIT, :re_len => 16]
+			@dbs = {}
+			self.hash = lambda {|k|
+				[k.timestamp.to_i/60/60].pack 'N'  # Hour-based rotation
+			}
+		end
 
-	def sync
-		@dbs.each{|n,db|db.sync}
-		@rdb.sync
-	end
+		def close
+			@env.close
+		end
 
-	def close
-		@dbs.each{|n,db|db.close 0}
-		@rdb.close 0
-	end
+		def hash_func= exe
+			hash_func &exe
+		end
 
-	def put k, v, f = k
-		id = UUIDTools::UUID.timestamp_create
-		s = [0x10, v].pack 'Na*'
-		n = db_name id
-		db( n)[ id.raw] = s
-	end
-	alias emit put
+		def hash_func &exe
+			@hash_func = exe  if exe
+			@hash_func
+		end
 
-	def get k
-		n = db_name id
-		db( n)[ id.raw] = s
+		def hashing key
+			@hash_func.call key
+		end
+
+		def db_name id
+			hash = hashing id
+			name = @rdb[ hash]
+			if name
+				name = UUIDTools::UUID.parse_raw name
+			else
+				name = UUIDTools::UUID.timestamp_create
+				@rdb[ hash] = name.raw
+			end
+			name
+		end
+
+		def db name
+			@env[ name.to_s, :type => SBDB::Btree, :flags => SBDB::CREATE | SBDB::AUTO_COMMIT]
+		end
+
+		def sync
+			@dbs.each {|name, db| db.sync }
+			@rdb.sync
+		end
+
+		def close
+			@dbs.each {|name, db| db.close 0 }
+			@rdb.close 0
+		end
+
+		def put val, sid = nil
+			id = UUIDTools::UUID.timestamp_create
+			dat = [sid || 0x10, val].pack 'Na*'
+			name = db_name id
+			db( name)[ id.raw] = dat
+		end
+		alias emit put
+
+		def get key
+			name = db_name id
+			db( name)[ id.raw]
+		end
 	end
 end

@@ -95,7 +95,7 @@ module Logan
 				def event_cmd cmd
 					sid, line = cmd.unpack 'Na*'
 					begin
-						@config[ :fileparser, sid].event_line line, self
+						@config[ :fileparser][sid].event_line line, self
 					rescue Didi::Config::NoSIDFound, Didi::Config::SIDLoadingError
 						$stderr.puts( {:sid => sid, :exception => $!, :backtrace => $!.backtrace}.inspect)
 					end

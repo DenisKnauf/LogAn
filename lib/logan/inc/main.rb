@@ -5,41 +5,61 @@ require 'robustserver'
 
 module LogAn::Inc
 	class Main < RobustServer
-		def config db, type = nil
+		# Open Config.
+		def config env, db, type = nil
 			type ||= 1+4
-			ret = @etc[ 'inc.cnf', db, SBDB::RDONLY]
+			ret = env[ 'inc.cnf', db, SBDB::RDONLY]
 			ret = AutoValueConvertHash.new ret  if type&4 > 0
 			ret = Cache.new ret, type&3  if type&3 > 0
 			ret
 		end
 
+		# Prepare Server.
+		#
+		# * conf:
+		#    logs
+		#    : Where to store log-databases? default: ./logs
+		#    etc
+		#    : Where to find config-databases? default: ./etc
+		#    server
+		#    : Server-Configuration. default { port: 1087 }
 		def initialize conf
 			super
-			@conf = conf
-			@logs = LogAn::Loglines.new 'logs'
-			etc = @conf[:etc] || 'etc'
-			Dir.mkdir etc  rescue Errno::EEXIST
-			@etc = SBDB::Env.new( etc,
+			@conf = {}
+			# Copy config - changes possible
+			conf.each &@conf.method(:[]=)
+			# Default directories
+			%w[logs etc].each {|key| @conf[key.to_sym] = key }
+			# Open Loglines-databases
+			@logs = LogAn::Loglines.new @conf[:logs]
+			# Open config-databases
+			Dir.mkdir @conf[:etc]  rescue Errno::EEXIST
+			@etc = SBDB::Env.new( @conf[:etc],
 					log_config: SBDB::Env::LOG_IN_MEMORY | SBDB::Env::LOG_AUTO_REMOVE,
 					flags: SBDB::CREATE | SBDB::Env::INIT_TXN | Bdb::DB_INIT_MPOOL)
-			@hosts = config 'hosts'
-			@files = config 'files'
-			@fileparser = config 'fileparser'
-			@serv = LogAn::Inc.new :sock => TCPServer.new( *@conf[:server])
-			@sigs[:INT] = @sigs[:TERM] = method(:shutdown)
+			# Set inc-config - stored in etc/inc.cnf
+			@conf[:inc] = {}
+			%w[hosts files fileparser].each {|key| @conf[:inc][key.to_sym] = config( @etc, key) }
+			# Prepare Inc-server - create server
+			@serv = LogAn::Inc.new :sock => TCPServer.new( *@conf[:server]), :config => @conf[:inc]
+			# Shutdown on signals
+			@sigs[:INT] = @sigs[:TERM] = method( :shutdown)
 		end
 
+		# Will be called at exit.  Will close all opened BDB::Env
 		def at_exit
 			@logs and @logs.close
 			@etc and @etc.close
 		end
 
-		def shutdown s = nil
-			$stderr.puts [:signal, s, Signal[s]].inspect  if s
+		# Shutdown Server cleanly.
+		def shutdown signal = nil
+			$stderr.puts [:signal, signal, Signal[signal]].inspect  if signal
 			@serv.close
 			exit 0
 		end
 
+		# Runs server.  Don't use it!  Use #main.
 		def run
 			@serv.run
 		end

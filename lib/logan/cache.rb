@@ -31,7 +31,7 @@ class LogAn::Cache
 	end
 
 	def type= type
-		self.read, self.write = type & 1 > 0, type & 2 > 0
+		self.read_cache, self.write_cache = type & 1 > 0, type & 2 > 0
 		type
 	end
 

@@ -8,10 +8,10 @@ require 'logan/loglines'
 module LogAn::Inc
 	class Main < RobustServer
 		# Open Config.
-		def config env, db, type = nil
+		def config env, db, type = nil, flags = nil
 			$stderr.puts "Open Database \"sids.cnf\" #{db.inspect} (#{type.inspect})"
 			type ||= 1+4
-			ret = env[ 'sids.cnf', db, SBDB::RDONLY]
+			ret = env[ 'sids.cnf', db, flags || SBDB::RDONLY]
 			ret = AutoValueConvertHash.new ret  if type&4 > 0
 			ret = Cache.new ret, type&3  if type&3 > 0
 			ret
@@ -43,7 +43,10 @@ module LogAn::Inc
 			# Set inc-config - stored in etc/inc.cnf
 			@conf[:inc] = {}
 			%w[hosts files fileparser].each {|key| @conf[:inc][key.to_sym] = config( @etc, key) }
+			@store = Cache.new AutoValueConvertHash.new( @etc[ 'sids.store', 'seeks', SBDB::CREATE | SBDB::AUTO_COMMIT]), 3
 			# Prepare Inc-server - create server
+			LogAn::Inc::Fileparser::Base.logdb = @logs
+			LogAn::Inc::Fileparser::Base.store = @store
 			@serv = LogAn::Inc.new :sock => TCPServer.new( *@conf[:server]), :config => @conf[:inc]
 			# Shutdown on signals
 			@sigs[:INT] = @sigs[:TERM] = method( :shutdown)

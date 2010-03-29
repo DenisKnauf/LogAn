@@ -3,13 +3,17 @@ module LogAn
 	module Inc
 		module FileParser
 			module Base
+				class <self
+					attr_accessor :logdb, :store
+				end
+
 				def emit v
-					@logdb.push @sid, line
+					@@logdb.push @sid, line
 				end
 
 				def seeks read
-					inode, seek = (@store[ :seeks, @sid] || "\0\0\0\0\0\0\0\0").unpack 'a4N'
-					@store[ :seeks, @sid] = [inode, read + seek].pack( 'a4N')
+					inode, seek = (@@store[ :seeks, @sid] || "\0\0\0\0\0\0\0\0").unpack 'a4N'
+					@@store[ :seeks, @sid] = [inode, read + seek].pack( 'a4N')
 				end
 			end
 
@@ -22,8 +26,8 @@ module LogAn
 					@@fileparser[sid] ||= self.new sid
 				end
 
-				def initialize logdb, store, sid, delimiter = nil
-					@logdb, @store, @sid, @delimiter = logdb, store, sid, delimiter || "\n"
+				def initialize sid, delimiter = nil
+					@sid, @delimiter = sid, delimiter || "\n"
 					@delimiter = Regexp.new "^.*?#{@delimiter}"
 					@buffer, @linebuffer = Select::Buffer.new( ''), Select::Buffer.new( '')
 				end

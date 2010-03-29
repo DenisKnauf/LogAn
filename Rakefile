@@ -14,6 +14,7 @@ begin
     gem.require_paths = %w[bin lib]
 		gem.add_dependency 'robustserver'
 		gem.add_dependency 'sbdb'
+		gem.add_dependency 'Safebox'
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError

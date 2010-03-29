@@ -1,5 +1,5 @@
 
-class Cache
+class LogAn::Cache
 	READ = 1
 	WRITE = 2
 	attr_reader :source, :data
@@ -37,12 +37,12 @@ class Cache
 
 	def read_cache= type
 		@type &= ~ (type ? 0 : 1)
-		define_singleton_method :[], type ? :oget, :dget
+		define_singleton_method :[], type ? :oget : :dget
 	end
 
 	def write_cache= type
 		@type &= ~ (type ? 0 : 2)
-		define_singleton_method :[], type ? :oset, :dset
+		define_singleton_method :[], type ? :oset : :dset
 	end
 
 	#include Enumerable
@@ -54,7 +54,7 @@ class Cache
 	#end
 end
 
-class AutoValueConvertHash
+class LogAn::AutoValueConvertHash
 	include Enumerable
 
 	def initialize obj, encode = nil, each = nil, &decode

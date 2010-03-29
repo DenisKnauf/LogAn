@@ -92,12 +92,13 @@ class LogAn::Inc::Server < ::Select::Server
 
 		def init opts
 			super opts
+			@sid0 = LogAn::Inc::SID0.new
 			@config = opts[:config] or raise( ArgumentError, "#{self.class} needs a Config!")
 		end
 		
 		def event_cmd cmd
 			sid, line = cmd.unpack 'Na*'
-			fps = @config[:fileparser][sid]
+			fp = sid == 0 ? @sid0 : @config[:fileparser][sid]
 			fp.event_line line, self  if fp
 		end
 	end

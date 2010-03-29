@@ -9,7 +9,7 @@ require 'logan/cache'
 
 module LogAn::Inc
 	class Main < RobustServer
-		def cache db, type, &e
+		def cache ret, type, &e
 			type ||= 1+4
 			ret = LogAn::AutoValueConvertHash.new ret, &e  if type&4 > 0 or e
 			ret = LogAn::Cache.new ret, type&3  if type&3 > 0

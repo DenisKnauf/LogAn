@@ -3,7 +3,7 @@ module LogAn
 	module Inc
 		module FileParser
 			module Base
-				class <self
+				class <<self
 					attr_accessor :logdb, :store
 				end
 

@@ -45,13 +45,14 @@ class LogAn::Cache
 		define_singleton_method :[]=, method( type ? :oset : :dset)
 	end
 
-	#include Enumerable
-	#def each &e
-		#return Enumerator.new self, :each  unless e
-		#flush!
-		#@source.each &e
-		#self
-	#end
+	include Enumerable
+	def each
+		return Enumerator.new self, :each  unless e
+		(@source.keys + @data.keys).each do |key|
+			yield key, self[key]
+		end
+		self
+	end
 end
 
 class LogAn::AutoValueConvertHash

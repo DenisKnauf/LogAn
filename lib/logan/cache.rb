@@ -42,7 +42,7 @@ class LogAn::Cache
 
 	def write_cache= type
 		@type &= ~ (type ? 0 : 2)
-		define_singleton_method :[], method( type ? :oset : :dset)
+		define_singleton_method :[]=, method( type ? :oset : :dset)
 	end
 
 	#include Enumerable
@@ -56,6 +56,7 @@ end
 
 class LogAn::AutoValueConvertHash
 	include Enumerable
+	attr_reader :decode, :encode
 
 	def initialize obj, encode = nil, each = nil, &decode
 		@object, @encoder = obj, decode.nil? ? encode || Marshal.method( :dump) : nil,
@@ -64,16 +65,16 @@ class LogAn::AutoValueConvertHash
 	end
 
 	def [] k
-		decode.call @object[k]
+		@decode.call @object[k]
 	end
 
 	def []= k, v
-		@object[k] = encode.call v
+		@object[k] = @encode.call v
 	end
 
 	def each *paras
 		@each.call *paras do |k, v|
-			yield k, decode( v)
+			yield k, @decode.call( v)
 		end
 	end
 end

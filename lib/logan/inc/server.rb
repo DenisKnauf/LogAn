@@ -97,8 +97,7 @@ class LogAn::Inc::Server < ::Select::Server
 		
 		def event_cmd cmd
 			sid, line = cmd.unpack 'Na*'
-			fps = @config[:fileparser]
-			fp = fps[sid]
+			fps = @config[:fileparser][sid]
 			fp.event_line line, self  if fileparser
 		end
 	end

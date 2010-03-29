@@ -43,11 +43,11 @@ module LogAn::Inc
 			# Set inc-config - stored in etc/inc.cnf
 			@conf[:inc] = {}
 			%w[hosts files fileparser].each {|key| @conf[:inc][key.to_sym] = config( @etc, key) }
-			@store = Cache.new AutoValueConvertHash.new( @etc[ 'sids.store', 'seeks', SBDB::CREATE | SBDB::AUTO_COMMIT]), 3
+			@store = Cache.new AutoValueConvertHash.new( @etc[ 'sids.store', 'seeks', SBDB::Recno, SBDB::CREATE | SBDB::AUTO_COMMIT]), 3
 			# Prepare Inc-server - create server
 			LogAn::Inc::Fileparser::Base.logdb = @logs
 			LogAn::Inc::Fileparser::Base.store = @store
-			@serv = LogAn::Inc.new :sock => TCPServer.new( *@conf[:server]), :config => @conf[:inc]
+			@serv = LogAn::Inc::Server.new :sock => TCPServer.new( *@conf[:server]), :config => @conf[:inc]
 			# Shutdown on signals
 			@sigs[:INT] = @sigs[:TERM] = method( :shutdown)
 		end

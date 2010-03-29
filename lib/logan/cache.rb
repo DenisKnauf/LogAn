@@ -10,16 +10,16 @@ class LogAn::Cache
 	end
 
 	def flush!
-		@data.each {|k,v| @obj[k] = v }
+		@data.each {|k,v| @source[k] = v }
 		@data = {}
 	end
 
 	def dget k
-		@data[k] ||= @obj[k]
+		@data[k] ||= @source[k]
 	end
 
 	def oget k
-		@data[k] || @obj[k]
+		@data[k] || @source[k]
 	end
 
 	def dset k, v
@@ -27,7 +27,7 @@ class LogAn::Cache
 	end
 
 	def oset k, v
-		@obj[k] = v
+		@source[k] = v
 	end
 
 	def type= type
@@ -49,7 +49,7 @@ class LogAn::Cache
 	#def each &e
 		#return Enumerator.new self, :each  unless e
 		#flush!
-		#@obj.each &e
+		#@source.each &e
 		#self
 	#end
 end
@@ -58,18 +58,18 @@ class LogAn::AutoValueConvertHash
 	include Enumerable
 	attr_reader :decode, :encode
 
-	def initialize obj, encode = nil, each = nil, &decode
-		@object, @encoder = obj, decode.nil? ? encode || Marshal.method( :dump) : nil,
-		@each = each || obj.method( :each)  rescue NameError
+	def initialize source, encode = nil, each = nil, &decode
+		@source, @encoder = source, decode.nil? ? encode || Marshal.method( :dump) : nil,
+		@each = each || source.method( :each)  rescue NameError
 		@decode = decode || Marshal.method( :restore)
 	end
 
 	def [] k
-		@decode.call @object[k]
+		@decode.call @source[k]
 	end
 
 	def []= k, v
-		@object[k] = @encode.call v
+		@source[k] = @encode.call v
 	end
 
 	def each *paras

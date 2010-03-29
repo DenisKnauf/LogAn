@@ -51,6 +51,9 @@ module LogAn::Inc
 			@serv = LogAn::Inc::Server.new :sock => TCPServer.new( *@conf[:server]), :config => @conf[:inc]
 			# Shutdown on signals
 			@sigs[:INT] = @sigs[:TERM] = method( :shutdown)
+		rescue Object
+			# It's better to close everything, because BDB doesn't like unexpected exits
+			self.at_exit
 		end
 
 		# Will be called at exit.  Will close all opened BDB::Env

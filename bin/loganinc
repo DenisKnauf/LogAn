@@ -12,4 +12,10 @@ opts[:server] = if ARGV[1]
 	end
 opts[:server][1] = opts[:server][1].to_i
 
-LogAn::Inc::Main.main *opts
+logan = LogAn::Inc::Main.new *opts
+begin
+	logan.main
+rescue Object
+	logan.at_exit
+	raise $!
+end

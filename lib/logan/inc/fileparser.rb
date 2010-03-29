@@ -1,5 +1,5 @@
 
-module Logan
+module LogAn
 	module Inc
 		module FileParser
 			module Base

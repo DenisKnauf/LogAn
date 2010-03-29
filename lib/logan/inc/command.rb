@@ -1,5 +1,5 @@
 
-module Logan
+module LogAn
 	module Inc
 		class Command < ::Array
 			attr_reader :sid

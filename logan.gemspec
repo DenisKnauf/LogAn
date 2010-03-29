@@ -9,22 +9,33 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Denis Knauf"]
-  s.date = %q{2010-02-24}
+  s.date = %q{2010-03-29}
   s.description = %q{}
   s.email = %q{Denis.Knauf@gmail.com}
+  s.executables = ["box3.rb", "box.rb", "box2.rb", "loganinc"]
   s.extra_rdoc_files = [
-    "LICENSE"
+    "LICENSE",
+     "README.md"
   ]
   s.files = [
-    "VERSION",
+    "AUTHORS",
+     "README.md",
+     "VERSION",
      "lib/cstruct.rb",
      "lib/logan.rb",
+     "lib/logan/cache.rb",
+     "lib/logan/inc.rb",
+     "lib/logan/inc/command.rb",
+     "lib/logan/inc/fileparser.rb",
+     "lib/logan/inc/main.rb",
+     "lib/logan/inc/server.rb",
+     "lib/logan/loglines.rb",
      "lib/logan/types/syslog.rb"
   ]
   s.homepage = %q{http://github.com/DenisKnauf/logan}
   s.rdoc_options = ["--charset=UTF-8"]
-  s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.5}
+  s.require_paths = ["bin", "lib"]
+  s.rubygems_version = %q{1.3.6}
   s.summary = %q{Logdata analysing database}
 
   if s.respond_to? :specification_version then
@@ -32,9 +43,12 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::RubyGemsVersion) >= Gem::Version.new('1.2.0') then
+      s.add_runtime_dependency(%q<["robustserver", "sbdb"]>, [">= 0"])
     else
+      s.add_dependency(%q<["robustserver", "sbdb"]>, [">= 0"])
     end
   else
+    s.add_dependency(%q<["robustserver", "sbdb"]>, [">= 0"])
   end
 end
 

@@ -1,3 +1,3 @@
 require 'logan'
 
-Logan.add CStruct.new( :line)
+LogAn.add CStruct.new( :line)

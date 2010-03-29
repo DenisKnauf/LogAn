@@ -29,7 +29,7 @@ module LogAn
 			@rdb = @env[ 'rotates.db', :type => SBDB::Btree, :flags => SBDB::CREATE | SBDB::AUTO_COMMIT]
 			@queue = @env[ "newids.queue", :type => SBDB::Queue, :flags => SBDB::CREATE | SBDB::AUTO_COMMIT, :re_len => 16]
 			@dbs = {}
-			self.hash = lambda {|k|
+			self.hash_func = lambda {|k|
 				[k.timestamp.to_i/60/60].pack 'N'  # Hour-based rotation
 			}
 		end

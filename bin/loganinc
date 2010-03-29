@@ -1,34 +1,15 @@
 #!/usr/bin/ruby
 
-require 'sbdb'
-require 'safebox'
-require 'robustserver'
+require 'logan'
+require 'logan/inc'
 
-class LogAn::Main < RobustServer
-	def initialize conf
-		super
-		@conf = conf
-		@logs = LogAn::Loglines.new 'logs'
-		Dir.mkdir 'etc'  rescue Errno::EEXIST
-		@etc = SBDB::Env.new( 'etc',
-				log_config: SBDB::Env::LOG_IN_MEMORY | SBDB::Env::LOG_AUTO_REMOVE,
-				flags: SBDB::CREATE | SBDB::Env::INIT_TXN | Bdb::DB_INIT_MPOOL)
-		@serv = LogAn::Inc.new :sock => TCPServer.new( *@conf[:server])
-		@sigs[:INT] = @sigs[:TERM] = method(:shutdown)
+opts = {}
+opts[:server] = if ARGV[1]
+		ARGV
+	elsif ARGV[0]
+		['localhost', ARGV[1]]
+	else %w[localhost 1087]
 	end
+opts[:server][1] = opts[:server][1].to_i
 
-	def at_exit
-		@logs and @logs.close
-		@etc and @etc.close
-	end
-
-	def shutdown s = nil
-		$stderr.puts [:signal, s, Signal[s]].inspect
-		@serv.close
-		exit 0
-	end
-
-	def run
-		@serv.run
-	end
-end
+LogAn::Inc::Main.main *opts

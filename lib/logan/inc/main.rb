@@ -2,13 +2,16 @@
 require 'sbdb'
 require 'safebox'
 require 'robustserver'
+require 'logan/inc'
+require 'logan/loglines'
 
 module LogAn::Inc
 	class Main < RobustServer
 		# Open Config.
 		def config env, db, type = nil
+			$stderr.puts "Open Database "sids.cnf" #{db.inspect} (#{type.inspect})"
 			type ||= 1+4
-			ret = env[ 'inc.cnf', db, SBDB::RDONLY]
+			ret = env[ 'sids.cnf', db, SBDB::RDONLY]
 			ret = AutoValueConvertHash.new ret  if type&4 > 0
 			ret = Cache.new ret, type&3  if type&3 > 0
 			ret
@@ -27,7 +30,7 @@ module LogAn::Inc
 			super
 			@conf = {}
 			# Copy config - changes possible
-			conf.each &@conf.method(:[]=)
+			conf.each {|key, val| @conf[key]= val }
 			# Default directories
 			%w[logs etc].each {|key| @conf[key.to_sym] = key }
 			# Open Loglines-databases

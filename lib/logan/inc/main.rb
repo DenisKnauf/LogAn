@@ -54,6 +54,7 @@ module LogAn::Inc
 		rescue Object
 			# It's better to close everything, because BDB doesn't like unexpected exits
 			self.at_exit
+			raise $!
 		end
 
 		# Will be called at exit.  Will close all opened BDB::Env
@@ -62,7 +63,7 @@ module LogAn::Inc
 			@etc and @etc.close
 		end
 
-		# Shutdown Server cleanly.
+		# Shutdown Server cleanly. First shutdown TCPServer.
 		def shutdown signal = nil
 			$stderr.puts [:signal, signal, Signal[signal]].inspect  if signal
 			@serv.close

@@ -67,8 +67,9 @@ module LogAn::Inc
 			# Open seeks-database
 			begin
 				stores = @conf[:stores] = {}
-				stores[:seeks] = store( @etc, 'seeks', 3,
-						lambda {|val| val.pack( 'NN') }) {|val| (val||0.chr*8).unpack( 'NN') }
+				db = @etc[ 'sids.store', 'seeks', SBDB::Recno, SBDB::CREATE | SBDB::AUTO_COMMIT]
+				db = LogAn::AutoValueConvertHash.new( db, lambda {|val| val.pack( 'NN') }) {|val| (val||0.chr*8).unpack( 'NN') }
+				stores[:seeks] = LogAn::Cache.new db
 				LogAn::Inc::FileParser::Base.store = LogAn::Inc::SID0.store = stores
 			end
 

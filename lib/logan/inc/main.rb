@@ -2,6 +2,7 @@
 require 'sbdb'
 require 'safebox'
 require 'robustserver'
+require 'socket'
 require 'logan/inc'
 require 'logan/loglines'
 require 'logan/cache'
@@ -45,6 +46,7 @@ module LogAn::Inc
 			@conf[:inc] = {}
 			%w[hosts files fileparser].each {|key| @conf[:inc][key.to_sym] = config( @etc, key) }
 			@store = LogAn::Cache.new LogAn::AutoValueConvertHash.new( @etc[ 'sids.store', 'seeks', SBDB::Recno, SBDB::CREATE | SBDB::AUTO_COMMIT]), 3
+			exit 1
 			# Prepare Inc-server - create server
 			LogAn::Inc::FileParser::Base.logdb = @logs
 			LogAn::Inc::FileParser::Base.store = @store

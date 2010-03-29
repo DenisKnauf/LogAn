@@ -72,11 +72,6 @@ module LogAn
 			@rdb.sync
 		end
 
-		def close
-			@dbs.each {|name, db| db.close 0 }
-			@rdb.close 0
-		end
-
 		def put val, sid = nil
 			id = UUIDTools::UUID.timestamp_create
 			dat = [sid || 0x10, val].pack 'Na*'

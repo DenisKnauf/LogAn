@@ -9,7 +9,7 @@ module LogAn::Inc
 	class Main < RobustServer
 		# Open Config.
 		def config env, db, type = nil
-			$stderr.puts "Open Database "sids.cnf" #{db.inspect} (#{type.inspect})"
+			$stderr.puts "Open Database \"sids.cnf\" #{db.inspect} (#{type.inspect})"
 			type ||= 1+4
 			ret = env[ 'sids.cnf', db, SBDB::RDONLY]
 			ret = AutoValueConvertHash.new ret  if type&4 > 0

@@ -62,6 +62,7 @@ module LogAn::Inc
 				configs = @conf[:configs] = {}
 				%w[hosts files].each {|key| configs[key.to_sym] = config( @etc, key) }
 				configs[:fileparser] = config( @etc, 'fileparser') {|val| Safebox.run "[#{val}]"}
+				LogAn::Inc::SID0.config = configs
 			end
 
 			# Open seeks-database

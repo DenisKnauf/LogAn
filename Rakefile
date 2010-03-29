@@ -12,7 +12,8 @@ begin
     gem.authors = ["Denis Knauf"]
     gem.files = %w[AUTHORS README.md VERSION lib/**/*.rb test/**/*.rb]
     gem.require_paths = %w[bin lib]
-		gem.add_dependency %w[robustserver sbdb]
+		gem.add_dependency 'robustserver'
+		gem.add_dependency 'sbdb'
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError

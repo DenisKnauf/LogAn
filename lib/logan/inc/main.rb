@@ -13,8 +13,8 @@ module LogAn::Inc
 			$stderr.puts "Open Database \"sids.cnf\" #{db.inspect} (#{type.inspect})"
 			type ||= 1+4
 			ret = env[ 'sids.cnf', db, :flags => flags || SBDB::RDONLY]
-			ret = AutoValueConvertHash.new ret  if type&4 > 0
-			ret = Cache.new ret, type&3  if type&3 > 0
+			ret = LogAn::AutoValueConvertHash.new ret  if type&4 > 0
+			ret = LogAn::Cache.new ret, type&3  if type&3 > 0
 			ret
 		end
 
@@ -44,7 +44,7 @@ module LogAn::Inc
 			# Set inc-config - stored in etc/inc.cnf
 			@conf[:inc] = {}
 			%w[hosts files fileparser].each {|key| @conf[:inc][key.to_sym] = config( @etc, key) }
-			@store = Cache.new AutoValueConvertHash.new( @etc[ 'sids.store', 'seeks', SBDB::Recno, SBDB::CREATE | SBDB::AUTO_COMMIT]), 3
+			@store = LogAn::Cache.new LogAn::AutoValueConvertHash.new( @etc[ 'sids.store', 'seeks', SBDB::Recno, SBDB::CREATE | SBDB::AUTO_COMMIT]), 3
 			# Prepare Inc-server - create server
 			LogAn::Inc::Fileparser::Base.logdb = @logs
 			LogAn::Inc::Fileparser::Base.store = @store

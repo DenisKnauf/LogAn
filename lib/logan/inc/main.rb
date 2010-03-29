@@ -9,14 +9,23 @@ require 'logan/cache'
 
 module LogAn::Inc
 	class Main < RobustServer
-		# Open Config.
-		def config env, db, type = nil, flags = nil, &e
-			$stderr.puts "Open Database \"sids.cnf\" #{db.inspect} (#{type.inspect})"
+		def cache db, type, &e
 			type ||= 1+4
-			ret = env[ 'sids.cnf', db, :flags => flags || SBDB::RDONLY]
 			ret = LogAn::AutoValueConvertHash.new ret, &e  if type&4 > 0 or e
 			ret = LogAn::Cache.new ret, type&3  if type&3 > 0
 			ret
+		end
+
+		# Open Store.
+		def store env, db, type = nil, flags = nil, &e
+			$stderr.puts [:store, :open, "sids.cnf", db, type].inspect
+			cache env[ 'sids.cnf', db, :flags => flags || SBDB::CREATE | SBDB::AUTO_COMMIT], type, &e
+		end
+
+		# Open Config.
+		def config env, db, type = nil, flags = nil, &e
+			$stderr.puts [:config, :open, "sids.cnf", db, type].inspect
+			cache env[ 'sids.cnf', db, :flags => flags || SBDB::RDONLY], type, &e
 		end
 
 		# Prepare Server.
@@ -40,6 +49,7 @@ module LogAn::Inc
 
 			# Open Loglines-databases
 			@logs = LogAn::Loglines.new @conf[:logs]
+			LogAn::Inc::FileParser::Base.logdb = @logs
 
 			# Open config-databases
 			Dir.mkdir @conf[:etc]  rescue Errno::EEXIST
@@ -47,18 +57,23 @@ module LogAn::Inc
 					log_config: SBDB::Env::LOG_IN_MEMORY | SBDB::Env::LOG_AUTO_REMOVE,
 					flags: SBDB::CREATE | SBDB::Env::INIT_TXN | Bdb::DB_INIT_MPOOL)
 
-			# Set inc-config - stored in etc/inc.cnf
+			# Open configs
 			begin
-				inc = @conf[:inc] = {}
-				%w[hosts files fileparser].each {|key| @conf[:inc][key.to_sym] = config( @etc, key) }
-				inc[:fileparser] = config( @etc, 'fileparser') {|val| Safebox.run "[#{val}]"}
+				configs = @conf[:configs] = {}
+				%w[hosts files].each {|key| configs[key.to_sym] = config( @etc, key) }
+				configs[:fileparser] = config( @etc, 'fileparser') {|val| Safebox.run "[#{val}]"}
 			end
-			@store = LogAn::Cache.new LogAn::AutoValueConvertHash.new( @etc[ 'sids.store', 'seeks', SBDB::Recno, SBDB::CREATE | SBDB::AUTO_COMMIT]), 3
+
+			# Open seeks-database
+			begin
+				stores = @conf[:stores] = {}
+				stores[:seeks] = store( @etc, 'seeks', 3,
+						lambda {|val| val.pack( 'NN') }) {|val| (val||0.chr*8).unpack( 'NN') }
+				LogAn::Inc::FileParser::Base.store = LogAn::Inc::SID0.store = stores
+			end
 
 			# Prepare Inc-server - create server
-			LogAn::Inc::FileParser::Base.logdb = @logs
-			LogAn::Inc::FileParser::Base.store = @store
-			@serv = LogAn::Inc::Server.new :sock => TCPServer.new( *@conf[:server]), :config => @conf[:inc]
+			@serv = LogAn::Inc::Server.new :sock => TCPServer.new( *@conf[:server]), :config => @conf[:configs]
 
 			# Shutdown on signals
 			@sigs[:INT] = @sigs[:TERM] = method( :shutdown)

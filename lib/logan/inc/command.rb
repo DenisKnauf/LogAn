@@ -14,24 +14,28 @@ module LogAn
 		end
 
 		class SID0 < Command
-			def initialize store, config, sid = 0
-				@store, @config = store, config
+			class <<self
+				attr_accessor :store, :config
+			end
+
+			def initialize sid = 0
+				super sid
 				self[9] = method :event_hostname
 				self[10] = method :event_filerotated
 			end
 
 			def event_filerotated line, sock
-				sid, d = line.unpack 'Na8'
-				@store[ :seeks, sid] = d
+				sid, inode, seek = line.unpack 'NNN'
+				@@store[ :seeks][ sid] = [inode, seek]
 			end
 
 			def event_hostname line, sock
-				@config[ :hosts].each do |sid,host|
+				@@config[ :hosts].each do |sid, host|
 					next  unless line == host
-					file = @config[ :files, sid]
+					file = @@config[ :files][ sid]
 					next  unless file
 					# command, SID, (inode, seek), file
-					pc = [1, sid, @store[ :seeks, sid] || "\x00\x00\x00\x00\x00\x00\x00\x00", file].pack 'nNa8a*'
+					pc = [1, sid, @@store[ :seeks][ sid], file].pack 'nNNNa*'
 					sock.write [pc.length, pc].pack( 'Na*')
 				end
 			end

@@ -12,19 +12,14 @@ module LogAn
 				end
 
 				def seeks read
-					inode, seek = (@@store[ :seeks, @sid] || "\0\0\0\0\0\0\0\0").unpack 'a4N'
-					@@store[ :seeks, @sid] = [inode, read + seek].pack( 'a4N')
+					inode, seek = @@store[ :seeks][@sid]
+					@@store[ :seeks][@sid] = [inode, read + seek]
 				end
 			end
 
 			class Line
 				extend Base
 				attr_reader :sid, :delimiter, :buffer, :linebuffer
-				@@fileparser = []
-
-				def self.[] sid
-					@@fileparser[sid] ||= self.new sid
-				end
 
 				def initialize sid, delimiter = nil
 					@sid, @delimiter = sid, delimiter || "\n"

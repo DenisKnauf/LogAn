@@ -15,7 +15,10 @@ module LogAn
 
 		class SID0 < Command
 			class <<self
-				attr_accessor :store, :config
+				def config=( db)  @@config = db  end
+				def config()  @@config  end
+				def store=( db)  @@store = db  end
+				def store()  @@store  end
 			end
 
 			def initialize sid = 0

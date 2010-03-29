@@ -47,7 +47,7 @@ class LogAn::Cache
 
 	include Enumerable
 	def each
-		return Enumerator.new self, :each  unless e
+		return Enumerator.new self, :each  unless block_given?
 		(@source.keys + @data.keys).each do |key|
 			yield key, self[key]
 		end

@@ -4,6 +4,7 @@ require 'safebox'
 require 'robustserver'
 require 'logan/inc'
 require 'logan/loglines'
+require 'logan/cache'
 
 module LogAn::Inc
 	class Main < RobustServer

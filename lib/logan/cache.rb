@@ -37,12 +37,12 @@ class LogAn::Cache
 
 	def read_cache= type
 		@type &= ~ (type ? 0 : 1)
-		define_singleton_method :[], type ? :oget : :dget
+		define_singleton_method :[], method( type ? :oget : :dget)
 	end
 
 	def write_cache= type
 		@type &= ~ (type ? 0 : 2)
-		define_singleton_method :[], type ? :oset : :dset
+		define_singleton_method :[], method( type ? :oset : :dset)
 	end
 
 	#include Enumerable

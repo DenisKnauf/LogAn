@@ -46,8 +46,8 @@ module LogAn::Inc
 			%w[hosts files fileparser].each {|key| @conf[:inc][key.to_sym] = config( @etc, key) }
 			@store = LogAn::Cache.new LogAn::AutoValueConvertHash.new( @etc[ 'sids.store', 'seeks', SBDB::Recno, SBDB::CREATE | SBDB::AUTO_COMMIT]), 3
 			# Prepare Inc-server - create server
-			LogAn::Inc::Fileparser::Base.logdb = @logs
-			LogAn::Inc::Fileparser::Base.store = @store
+			LogAn::Inc::FileParser::Base.logdb = @logs
+			LogAn::Inc::FileParser::Base.store = @store
 			@serv = LogAn::Inc::Server.new :sock => TCPServer.new( *@conf[:server]), :config => @conf[:inc]
 			# Shutdown on signals
 			@sigs[:INT] = @sigs[:TERM] = method( :shutdown)
@@ -59,6 +59,7 @@ module LogAn::Inc
 
 		# Will be called at exit.  Will close all opened BDB::Env
 		def at_exit
+			$stderr.puts :at_exit
 			@logs and @logs.close
 			@etc and @etc.close
 		end

@@ -11,7 +11,7 @@ module LogAn::Inc
 		def config env, db, type = nil, flags = nil
 			$stderr.puts "Open Database \"sids.cnf\" #{db.inspect} (#{type.inspect})"
 			type ||= 1+4
-			ret = env[ 'sids.cnf', db, flags || SBDB::RDONLY]
+			ret = env[ 'sids.cnf', db, :flags => flags || SBDB::RDONLY]
 			ret = AutoValueConvertHash.new ret  if type&4 > 0
 			ret = Cache.new ret, type&3  if type&3 > 0
 			ret

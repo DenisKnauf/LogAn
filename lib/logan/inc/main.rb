@@ -7,6 +7,13 @@ require 'logan/inc'
 require 'logan/loglines'
 require 'logan/cache'
 
+module LogAn::Logging
+	def log lvl, *txt
+		$stderr.puts( ([Time.now, lvl]+txt).inspect)
+	end
+	alias method_missing log
+end
+
 module LogAn::Inc
 	class Main < RobustServer
 		def cache ret, type, &e
@@ -18,13 +25,13 @@ module LogAn::Inc
 
 		# Open Store.
 		def store env, db, type = nil, flags = nil, &e
-			$stderr.puts [:store, :open, "sids.cnf", db, type].inspect
+			LogAn::Logging.info :store, :open, "sids.cnf", db, type
 			cache env[ 'sids.cnf', db, :flags => flags || SBDB::CREATE | SBDB::AUTO_COMMIT], type, &e
 		end
 
 		# Open Config.
 		def config env, db, type = nil, flags = nil, &e
-			$stderr.puts [:config, :open, "sids.cnf", db, type].inspect
+			LogAn::Logging.info :config, :open, "sids.cnf", db, type
 			cache env[ 'sids.cnf', db, :flags => flags || SBDB::RDONLY], type, &e
 		end
 
@@ -78,14 +85,14 @@ module LogAn::Inc
 			@select = LogAn::Inc::Select.new
 			status = lambda do
 				@select.at Time.now+5, &status
-				$stderr.puts "#{Time.now.strftime"%H:%M:%S"}|INFO|Statistic|#{@select.inspect}"
+				LogAn::Logging.info @select
 				@conf[:stores].each{|key, db| db.flush!}
 			end
 			status.call
 
 			# Prepare Inc-server - create server
 			@serv = LogAn::Inc::Server.new :sock => TCPServer.new( *@conf[:server]), :config => @conf[:configs], :select => @select
-			$stderr.puts @serv.inspect
+			LogAn::Logging.debug @serv
 
 			# Shutdown on signals
 			@sigs[:INT] = @sigs[:TERM] = method( :shutdown)
@@ -98,14 +105,14 @@ module LogAn::Inc
 
 		# Will be called at exit.  Will close all opened BDB::Env
 		def at_exit
-			$stderr.puts :at_exit
+			LogAn::Logging.info :at_exit
 			@logs and @logs.close
 			@etc and @etc.close
 		end
 
 		# Shutdown Server cleanly. First shutdown TCPServer.
 		def shutdown signal = nil
-			$stderr.puts [:signal, signal, Signal[signal]].inspect  if signal
+			LogAn::Logging.info :signal, signal, Signal[signal]]  if signal
 			@serv.close
 			exit 0
 		end

@@ -74,8 +74,18 @@ module LogAn::Inc
 				LogAn::Inc::FileParser::Base.store = LogAn::Inc::SID0.store = stores
 			end
 
+			# Select-framework
+			@select = LogAn::Inc::Select.new
+			status = lambda do
+				@select.at Time.now+5, &status
+				$stderr.puts "#{Time.now.strftime"%H:%M:%S"}|INFO|Statistic|#{@select.inspect}"
+				@conf[:stores].source.source.flush!
+			end
+			status.call
+
 			# Prepare Inc-server - create server
-			@serv = LogAn::Inc::Server.new :sock => TCPServer.new( *@conf[:server]), :config => @conf[:configs]
+			@serv = LogAn::Inc::Server.new :sock => TCPServer.new( *@conf[:server]), :config => @conf[:configs], :select => @select
+			$stderr.puts @serv.inspect
 
 			# Shutdown on signals
 			@sigs[:INT] = @sigs[:TERM] = method( :shutdown)

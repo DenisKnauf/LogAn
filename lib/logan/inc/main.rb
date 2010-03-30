@@ -112,7 +112,7 @@ module LogAn::Inc
 
 		# Shutdown Server cleanly. First shutdown TCPServer.
 		def shutdown signal = nil
-			LogAn::Logging.info :signal, signal, Signal[signal]]  if signal
+			LogAn::Logging.info :signal, signal, Signal[signal]  if signal
 			@serv.close
 			exit 0
 		end

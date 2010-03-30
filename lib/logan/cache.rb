@@ -46,9 +46,10 @@ class LogAn::Cache
 	end
 
 	include Enumerable
-	def each
+	def each *paras
 		return Enumerator.new self, :each  unless block_given?
-		(@source.keys + @data.keys).each do |key|
+		flush!  if @type&2 == 2
+		@source.each_keys( *paras) do |key|
 			yield key, self[key]
 		end
 		self
@@ -74,8 +75,16 @@ class LogAn::AutoValueConvertHash
 	end
 
 	def each *paras
+		return Enumerator.new self, :each  unless block_given?
 		@each.call *paras do |k, v|
 			yield k, @decode.call( v)
+		end
+	end
+
+	def each_keys *paras
+		return Enumerator.new self, :each_keys  unless block_given?
+		@each.call *paras do |k, v|
+			yield k
 		end
 	end
 end

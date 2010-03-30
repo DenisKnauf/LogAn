@@ -8,10 +8,15 @@ require 'logan/loglines'
 require 'logan/cache'
 
 module LogAn::Logging
-	def log lvl, *txt
-		$stderr.puts( ([Time.now, lvl]+txt).inspect)
+	class  << self
+		def log lvl, *txt
+			$stderr.puts( ([Time.now, lvl]+txt).inspect)
+		end
+		alias method_missing log
 	end
-	alias method_missing log
+	def method_missing *paras
+		self.class.log *paras
+	end
 end
 
 module LogAn::Inc

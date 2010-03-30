@@ -53,13 +53,18 @@ class LogAn::Inc::Select <::Select
 end
 
 class LogAn::Inc::Socket <::Select::Socket
+	def initialize *p
+		super( *p)
+		LogAn::Logging.info :connected, self
+	end
+
 	def event_read sock = @sock, event = :read
 		begin
 			@linebuf += sock.readpartial( @bufsize)
 		rescue EOFError
 			self.event_eof sock
-		rescue Errno::EPIPE => e
-			self.event_errno e, sock, event
+		rescue Errno::EPIPE
+			self.event_errno $!, sock, event
 		rescue IOError
 			self.event_ioerror sock, event
 		rescue Errno::ECONNRESET => e
@@ -72,6 +77,11 @@ class LogAn::Inc::Socket <::Select::Socket
 			@linebuf.remove 4
 			event_cmd @linebuf.remove( l)
 		end
+	end
+
+	def close
+		LogAn::Logging.info :disconnect, self
+		super
 	end
 end
 

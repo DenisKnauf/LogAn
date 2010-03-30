@@ -79,7 +79,7 @@ module LogAn::Inc
 			status = lambda do
 				@select.at Time.now+5, &status
 				$stderr.puts "#{Time.now.strftime"%H:%M:%S"}|INFO|Statistic|#{@select.inspect}"
-				@conf[:stores].source.source.flush!
+				@conf[:stores].each{|key, db| db.source.source.flush!}
 			end
 			status.call
 

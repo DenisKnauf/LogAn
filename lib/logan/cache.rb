@@ -58,7 +58,7 @@ end
 
 class LogAn::AutoValueConvertHash
 	include Enumerable
-	attr_reader :decode, :encode
+	attr_reader :decode, :encode, :source
 
 	def initialize source, encode = nil, each = nil, &decode
 		@source, @encoder = source, decode.nil? ? encode || Marshal.method( :dump) : nil,

@@ -60,7 +60,7 @@ module LogAn::Inc
 			# Open configs
 			begin
 				configs = @conf[:configs] = {}
-				%w[hosts files].each {|key| configs[key.to_sym] = config( @etc, key) }
+				%w[hosts files].each {|key| configs[key.to_sym] = config( @etc, key) {|l|l} }
 				configs[:fileparser] = config( @etc, 'fileparser') {|val| Safebox.run "[#{val}]"}
 				LogAn::Inc::SID0.config = configs
 			end

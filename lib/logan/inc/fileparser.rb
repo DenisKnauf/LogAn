@@ -10,7 +10,7 @@ module LogAn
 					def store()  @@store  end
 				end
 
-				def emit v
+				def emit line
 					@@logdb.push @sid, line
 				end
 

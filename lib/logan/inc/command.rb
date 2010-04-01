@@ -7,7 +7,7 @@ module LogAn
 				@sid = sid
 			end
 
-			def event_line line, sock
+			def event_read line, sock
 				cmd, l = line.unpack 'na*'
 				self[cmd].call( l, sock)  if self[cmd]
 			end

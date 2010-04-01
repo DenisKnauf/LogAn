@@ -109,7 +109,7 @@ class LogAn::Inc::Server < ::Select::Server
 		def event_cmd cmd
 			sid, line = cmd.unpack 'Na*'
 			fp = sid == 0 ? @sid0 : @config[:fileparser][sid]
-			fp.event_line line, self  if fp
+			fp.event_read line, self  if fp
 		end
 	end
 end

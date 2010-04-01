@@ -38,7 +38,7 @@ module LogAn
 					file = @@config[ :files][ sid]
 					next  unless file
 					# command, SID, (inode, seek), file
-					pc = [1, sid, @@store[ :seeks][ sid], file].pack 'nNNNa*'
+					pc = [1, sid, @@store[ :seeks][ sid], file].flatten.pack 'nNNNa*'
 					sock.write [pc.length, pc].pack( 'Na*')
 				end
 			end

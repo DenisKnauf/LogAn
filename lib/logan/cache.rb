@@ -58,26 +58,28 @@ end
 
 class LogAn::AutoValueConvertHash
 	include Enumerable
-	attr_reader :decode, :encode, :source
+	attr_reader :source
 
 	def initialize source, encode = nil, each = nil, &decode
-		@source, @encoder = source, decode.nil? ? encode || Marshal.method( :dump) : nil,
-		@each = each || source.method( :each)  rescue NameError
-		@decode = decode || Marshal.method( :restore)
+		@source, @encode = source, decode.nil? ? encode || Marshal.method( :dump) : encode,
+		@each, @decode = each, decode || Marshal.method( :restore)
+		@each ||= source.method( :each)  rescue NameError
+		define_method :encode, &@encode  if @encode
+		define_method :decode, &@decode  if @decode
 	end
 
 	def [] k
-		@decode.call @source[k]
+		decode @source[k]
 	end
 
 	def []= k, v
-		@source[k] = @encode.call v
+		@source[k] = encode v
 	end
 
 	def each *paras
 		return Enumerator.new self, :each  unless block_given?
 		@each.call *paras do |k, v|
-			yield k, @decode.call( v)
+			yield k, decode( v)
 		end
 	end
 

@@ -61,12 +61,12 @@ class LogAn::AutoValueConvertHash
 	attr_reader :source
 
 	def initialize source, encode = nil, each = nil, &decode
-		@source, @encode = source, decode.nil? ? encode || Marshal.method( :dump) : encode,
+		@source, @encode = source, encode || ( decode.nil? && Marshal.method( :dump) )
 		@each, @decode = each, decode || Marshal.method( :restore)
 		@each ||= source.method( :each)  rescue NameError
 		define_singleton_method :encode, &@encode  if @encode
 		define_singleton_method :decode, &@decode  if @decode
-		LogAn::Logging.debug encode: @encode, decode: @decode
+		LogAn::Logging.debug encode: @encode, decode: @decode, each: @each
 	end
 
 	def [] k

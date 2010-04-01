@@ -4,7 +4,10 @@ module LogAn
 		module FileParser
 			module Base
 				class <<self
-					attr_accessor :logdb, :store
+					def logdb=( var)  @@logdb = var  end
+					def logdb()  @@logdb  end
+					def store=( var)  @@store = var  end
+					def store()  @@store  end
 				end
 
 				def emit v

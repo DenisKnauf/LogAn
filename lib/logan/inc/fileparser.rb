@@ -18,7 +18,7 @@ module LogAn
 			end
 
 			class Line
-				extend Base
+				include Base
 				attr_reader :sid, :delimiter, :buffer, :linebuffer
 
 				def initialize sid, delimiter = nil

@@ -64,7 +64,7 @@ module LogAn
 		end
 
 		def db name
-			@env[ name.to_s, :type => SBDB::Btree, :flags => SBDB::CREATE | SBDB::AUTO_COMMIT]
+			@dbs[name] ||= @env[ name.to_s, :type => SBDB::Btree, :flags => SBDB::CREATE | SBDB::AUTO_COMMIT]
 		end
 
 		def sync
@@ -77,6 +77,7 @@ module LogAn
 			dat = [sid || 0x10, val].pack 'Na*'
 			name = db_name id
 			db( name)[ id.raw] = dat
+			@queue.push id.raw
 		end
 		alias emit put
 

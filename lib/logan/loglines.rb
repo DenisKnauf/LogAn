@@ -6,7 +6,7 @@ require 'logan'
 
 module LogAn
 	class Loglines
-		attr_reader :env, :rdb, :dbs
+		attr_reader :env, :rdb, :dbs, :counter
 
 		def self.new *paras
 			ret = obj = super( *paras)
@@ -28,7 +28,7 @@ module LogAn
 				end
 			@rdb = @env[ 'rotates.db', :type => SBDB::Btree, :flags => SBDB::CREATE | SBDB::AUTO_COMMIT]
 			@queue = @env[ "newids.queue", :type => SBDB::Queue, :flags => SBDB::CREATE | SBDB::AUTO_COMMIT, :re_len => 16]
-			@dbs = {}
+			@dbs, @counter = {}, 0
 			self.hash_func = lambda {|k|
 				[k.timestamp.to_i/60/60].pack 'N'  # Hour-based rotation
 			}
@@ -77,6 +77,7 @@ module LogAn
 			dat = [sid || 0x10, val].pack 'Na*'
 			name = db_name id
 			db( name)[ id.raw] = dat
+			@counter += 1
 			@queue.push id.raw
 		end
 		alias emit put

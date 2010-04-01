@@ -90,7 +90,7 @@ module LogAn::Inc
 			@select = LogAn::Inc::Select.new
 			status = lambda do
 				@select.at Time.now+5, &status
-				LogAn::Logging.info @select
+				LogAn::Logging.info :recv_lines => @logs.counter, :connections => @serv
 				@conf[:stores].each{|key, db| db.flush!}
 			end
 			status.call

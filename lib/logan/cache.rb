@@ -64,8 +64,8 @@ class LogAn::AutoValueConvertHash
 		@source, @encode = source, decode.nil? ? encode || Marshal.method( :dump) : encode,
 		@each, @decode = each, decode || Marshal.method( :restore)
 		@each ||= source.method( :each)  rescue NameError
-		define_method :encode, &@encode  if @encode
-		define_method :decode, &@decode  if @decode
+		define_singleton_method :encode, &@encode  if @encode
+		define_singleton_method :decode, &@decode  if @decode
 	end
 
 	def [] k

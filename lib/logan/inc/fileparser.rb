@@ -11,7 +11,7 @@ module LogAn
 				end
 
 				def emit line
-					@@logdb.push @sid, line
+					@@logdb.emit @sid, line
 				end
 
 				def seeks read

@@ -66,6 +66,7 @@ class LogAn::AutoValueConvertHash
 		@each ||= source.method( :each)  rescue NameError
 		define_singleton_method :encode, &@encode  if @encode
 		define_singleton_method :decode, &@decode  if @decode
+		LogAn::Logging.debug encode: @encode, decode: @decode
 	end
 
 	def [] k

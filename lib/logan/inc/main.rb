@@ -93,8 +93,8 @@ module LogAn::Inc
 			status = lambda do
 				@select.at Time.now+5, &status
 				LogAn::Logging.info :recv_lines => @logs.counter,
-						:connections => @serv && @serv.clients.map {|cl| cl.sid }
-				@conf[:stores].each{|key, db| db.flush!}
+						:connections => @serv && @serv.clients.map {|cl| cl.sock.peeraddr }
+				@conf[:stores].each {|key, db| db.flush!}
 			end
 			status.call
 

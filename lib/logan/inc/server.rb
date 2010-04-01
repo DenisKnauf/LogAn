@@ -86,7 +86,7 @@ class LogAn::Inc::Socket <::Select::Socket
 end
 
 class LogAn::Inc::Server < ::Select::Server
-	attr_reader :config
+	attr_reader :config, :clients
 
 	def init opts
 		super opts

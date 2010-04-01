@@ -27,7 +27,8 @@ module LogAn
 				else env
 				end
 			@rdb = @env[ 'rotates.db', :type => SBDB::Btree, :flags => SBDB::CREATE | SBDB::AUTO_COMMIT]
-			@queue = @env[ "newids.queue", :type => SBDB::Queue, :flags => SBDB::CREATE | SBDB::AUTO_COMMIT, :re_len => 16]
+			@queue = @env[ "newids.queue", :type => SBDB::Queue,
+					:flags => SBDB::CREATE | SBDB::AUTO_COMMIT, :re_len => 16]
 			@dbs, @counter = {}, 0
 			self.hash_func = lambda {|k|
 				[k.timestamp.to_i/60/60].pack 'N'  # Hour-based rotation
@@ -64,7 +65,8 @@ module LogAn
 		end
 
 		def db name
-			@dbs[name] ||= @env[ name.to_s, :type => SBDB::Btree, :flags => SBDB::CREATE | SBDB::AUTO_COMMIT]
+			@dbs[name] ||= @env[ name.to_s, :type => SBDB::Btree,
+					:flags => SBDB::CREATE | SBDB::AUTO_COMMIT]
 		end
 
 		def sync

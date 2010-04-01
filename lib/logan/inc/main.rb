@@ -81,7 +81,9 @@ module LogAn::Inc
 			begin
 				stores = @conf[:stores] = {}
 				db = @etc[ 'sids.store', 'seeks', SBDB::Recno, SBDB::CREATE | SBDB::AUTO_COMMIT]
-				db = LogAn::AutoValueConvertHash.new( db, lambda {|val| val.pack( 'NN') }) {|val| (val||0.chr*8).unpack( 'NN') }
+				db = LogAn::AutoValueConvertHash.new( db, lambda {|val| val.pack( 'NN') }) {|val|
+						(val||0.chr*8).unpack( 'NN')
+					}
 				stores[:seeks] = LogAn::Cache.new db
 				LogAn::Inc::FileParser::Base.store = LogAn::Inc::SID0.store = stores
 			end
@@ -90,13 +92,15 @@ module LogAn::Inc
 			@select = LogAn::Inc::Select.new
 			status = lambda do
 				@select.at Time.now+5, &status
-				LogAn::Logging.info :recv_lines => @logs.counter, :connections => @serv && @serv.clients.map{|cl|cl.sock.peeraddr}
+				LogAn::Logging.info :recv_lines => @logs.counter,
+						:connections => @serv && @serv.clients.map {|cl| cl.sid }
 				@conf[:stores].each{|key, db| db.flush!}
 			end
 			status.call
 
 			# Prepare Inc-server - create server
-			@serv = LogAn::Inc::Server.new :sock => TCPServer.new( *@conf[:server]), :config => @conf[:configs], :select => @select
+			@serv = LogAn::Inc::Server.new :sock => TCPServer.new( *@conf[:server]),
+					:config => @conf[:configs], :select => @select
 			LogAn::Logging.debug @serv
 
 			# Shutdown on signals

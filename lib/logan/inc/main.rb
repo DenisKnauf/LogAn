@@ -51,9 +51,9 @@ module LogAn::Inc
 		#    : Server-Configuration. default { port: 1087 }
 		def initialize conf
 			super
-			@conf = {}
 
 			# Copy config - changes possible
+			@conf = {}
 			conf.each {|key, val| @conf[key]= val }
 
 			# Default directories
@@ -90,13 +90,7 @@ module LogAn::Inc
 
 			# Select-framework
 			@select = LogAn::Inc::Select.new
-			status = lambda do
-				@select.at Time.now+5, &status
-				LogAn::Logging.info :recv_lines => @logs.counter,
-						:connections => @serv && @serv.clients.map {|cl| cl.sock.peeraddr }
-				@conf[:stores].each {|key, db| db.flush!}
-			end
-			status.call
+			status  # Init Status
 
 			# Prepare Inc-server - create server
 			@serv = LogAn::Inc::Server.new :sock => TCPServer.new( *@conf[:server]),
@@ -112,6 +106,13 @@ module LogAn::Inc
 			raise $!
 		end
 
+		def status
+			LogAn::Logging.info :recv_lines => @logs.counter,
+					:connections => @serv && @serv.clients.map {|cl| cl.sock.peeraddr }
+			@conf[ :stores].each {|key, db| db.flush!}
+			@select.at Time.now+5, &status
+		end
+
 		# Will be called at exit.  Will close all opened BDB::Env
 		def at_exit
 			LogAn::Logging.info :at_exit
@@ -121,7 +122,7 @@ module LogAn::Inc
 
 		# Shutdown Server cleanly. First shutdown TCPServer.
 		def shutdown signal = nil
-			LogAn::Logging.info :signal, signal, Signal[signal]  if signal
+			LogAn::Logging.info :signal, signal, Signal[ signal]  if signal
 			@serv.close
 			exit 0
 		end

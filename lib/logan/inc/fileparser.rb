@@ -30,12 +30,14 @@ module LogAn
 					@buffer, @linebuffer = Select::Buffer.new( ''), Select::Buffer.new( '')
 				end
 
-				def event_read str, sock
+				def event_read str, sock = nil
 					@buffer += str
-					@buffer.each! @delimiter do |line|
-						emit line
-						seeks line.length
-					end
+					@buffer.each! @delimiter, &method( :event_line)
+				end
+
+				def event_line line
+					emit line
+					seeks line.length
 				end
 			end
 
@@ -45,15 +47,12 @@ module LogAn
 					@multiline = multiline || /^\d\d-\d\d-\d\d:/
 				end
 
-				def event_read str, sock
-					@buffer += str
-					@buffer.each! @delimiter do |line|
-						if line =~ @multiline
-							emit @linebuffer.to_s
-							seeks @linebuffer.length
-							@linebuffer.replace line
-						else @linebuffer += line
-						end
+				def event_line line
+					if line =~ @multiline
+						emit @linebuffer.to_s
+						seeks @linebuffer.length
+						@linebuffer.replace line
+					else @linebuffer += line
 					end
 				end
 			end

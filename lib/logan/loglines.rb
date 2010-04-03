@@ -31,7 +31,8 @@ module LogAn
 					:flags => SBDB::CREATE | SBDB::AUTO_COMMIT, :re_len => 16]
 			@dbs, @counter = {}, 0
 			self.hash_func = lambda {|k|
-				[k.timestamp.to_i/60/60].pack 'N'  # Hour-based rotation
+				n = k.timestamp.to_i
+				[n - (n % 3600)].pack 'N'  # Hour-based rotation
 			}
 		end
 

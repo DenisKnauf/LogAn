@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+require 'logan/analyse'
+require 'active_support'
+require 'irb'
+
+$logan = LogAn::Analyse.new 'logs'
+begin
+	IRB.start __FILE__
+ensure
+	$logan.close
+end

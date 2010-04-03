@@ -90,6 +90,7 @@ module LogAn::Inc
 
 			# Select-framework
 			@select = LogAn::Inc::Select.new
+			@status = method :status
 			status  # Init Status
 
 			# Prepare Inc-server - create server
@@ -107,10 +108,10 @@ module LogAn::Inc
 		end
 
 		def status
+			@select.at Time.now+5, &@status
 			LogAn::Logging.info :recv_lines => @logs.counter,
 					:connections => @serv && @serv.clients.map {|cl| cl.sock.peeraddr }
 			@conf[ :stores].each {|key, db| db.flush!}
-			@select.at Time.now+5, &status
 		end
 
 		# Will be called at exit.  Will close all opened BDB::Env

@@ -31,7 +31,9 @@ class LogAn::Analyse
 	def dbs min, max = nil, &exe
 		return Enumerator.new( self, :dbs, min, max)  unless exe
 		range = timerange min, max
-		@lines.rdb.each &exe
+		@lines.rdb.each do |time, db|
+			exe.call db
+		end
 	end
 
 	def search min, max = nil, &exe

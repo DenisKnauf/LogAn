@@ -26,13 +26,17 @@ module LogAn
 						flags: SBDB::CREATE | SBDB::Env::INIT_TXN | Bdb::DB_INIT_MPOOL
 				else env
 				end
-			@rdb = @env[ 'rotates.db', :type => SBDB::Btree, :flags => SBDB::CREATE | SBDB::AUTO_COMMIT]
+			@rdb = AutoValueConvertHash.new(
+					AutoKeyConvertHash.new(
+						@env[ 'rotates.db', :type => SBDB::Btree, :flags => SBDB::CREATE | SBDB::AUTO_COMMIT],
+						lambda {|key| [key.to_i].pack 'N' }) {|key| Time.at key.unpack( 'N') },
+					lambda {|val| String === val ? val : val.raw } {|val| val && UUIDTools::UUID.parse_raw( val) }
 			@queue = @env[ "newids.queue", :type => SBDB::Queue,
 					:flags => SBDB::CREATE | SBDB::AUTO_COMMIT, :re_len => 16]
-			@dbs, @counter = {}, 0
+			@dbs, @counter = Cache.new, 0
 			self.hash_func = lambda {|k|
 				n = k.timestamp.to_i
-				[n - (n % 3600)].pack 'N'  # Hour-based rotation
+				n -= n % 3600
 			}
 		end
 

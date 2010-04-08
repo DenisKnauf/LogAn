@@ -9,6 +9,10 @@ class LogAn::Cache
 		@source, @data, self.type = source, data || {}, type
 	end
 
+	def close
+		@source.close
+	end
+
 	def flush!
 		@data.each {|k,v| @source[k] = v }
 		@data = {}
@@ -69,6 +73,10 @@ class LogAn::AutoValueConvertHash
 		LogAn::Logging.debug encode: @encode, decode: @decode, each: @each
 	end
 
+	def close
+		@source.close
+	end
+
 	def [] k
 		decode @source[k]
 	end
@@ -88,6 +96,39 @@ class LogAn::AutoValueConvertHash
 		return Enumerator.new self, :each_keys  unless block_given?
 		@each.call *paras do |k, v|
 			yield k
+		end
+	end
+end
+
+class LogAn::AutoKeyConvertHash
+	include Enumerable
+	attr_reader :source
+
+	def initialize source, encode = nil, each = nil, &decode
+		@source, @encode = source, encode || ( decode.nil? && Marshal.method( :dump) )
+		@each, @decode = each, decode || Marshal.method( :restore)
+		@each ||= source.method( :each)  rescue NameError
+		define_singleton_method :encode, &@encode  if @encode
+		define_singleton_method :decode, &@decode  if @decode
+		LogAn::Logging.debug encode: @encode, decode: @decode, each: @each
+	end
+
+	def close
+		@source.close
+	end
+
+	def [] k
+		@source[ encode( k)]
+	end
+
+	def []= k, v
+		@source[ encode( k)] = v
+	end
+
+	def each *paras
+		return Enumerator.new self, :each  unless block_given?
+		@each.call *paras do |k, v|
+			yield decode( k), v
 		end
 	end
 end

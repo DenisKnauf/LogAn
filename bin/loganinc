@@ -4,6 +4,7 @@ require 'logan'
 require 'logan/inc'
 
 opts = {}
+opts[:inspector] = ARGV[0] == '--inspector' ? ARGV.shift : false 
 opts[:server] = if ARGV[1]
 		ARGV
 	elsif ARGV[0]
@@ -14,6 +15,17 @@ opts[:server][1] = opts[:server][1].to_i
 
 logan = LogAn::Inc::Main.new opts
 begin
+	logan.instance_eval do
+		@inspector_server = UNIXServer.new 'loganinc.inspector.sock'
+		Thread.new do
+			loop do
+				sock = @inspector_server.accept
+				sock.each_line do |line|
+					sock.puts eval( line).inspect
+				end
+			end
+		end
+	end  if opts[:inspector]
 	logan.main
 rescue Object
 	logan.at_exit
